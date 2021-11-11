@@ -2,7 +2,7 @@
   <form @submit="$emit('add-todo', $event)" class="todo__form">
     <label>
       Todo
-      <input name="todoInput" type="text" />
+      <input name="todo" type="text" />
     </label>
     <button>Add</button>
   </form>

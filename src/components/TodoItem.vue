@@ -8,7 +8,7 @@ export default {
     edit(ev) {
       this.$emit("update", {
         id: this.item.id,
-        description: ev.target.innerText,
+        value: ev.target.innerText,
       });
     },
   },
@@ -18,12 +18,8 @@ export default {
 
 <template>
   <div class="todo__container">
-    <div class="todo__date">
-      <p>{{ item.date.split(" ")[0] }}</p>
-      <p>{{ item.date.split(" ")[1] }}</p>
-    </div>
     <p contenteditable @blur="edit" class="todo__text">
-      {{ item.description }}
+      {{ item.value }}
     </p>
     <input @change="$emit('clear', this.item.id)" type="checkbox" />
   </div>

@@ -15,12 +15,10 @@ const routes = [
 ];
 
 const router = createRouter({
-  // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
   history: createWebHashHistory(),
-  routes, // short for `routes: routes`
+  routes,
 });
 
-// Create a new store instance.
 const store = createStore({
   state() {
     return {
@@ -28,12 +26,6 @@ const store = createStore({
     };
   },
   mutations: {
-    increment(state) {
-      state.todos++;
-    },
-    decrement(state) {
-      state.todos--;
-    },
     editAmount(state, amount) {
       state.todos = amount;
     },

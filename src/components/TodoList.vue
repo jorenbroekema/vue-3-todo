@@ -17,72 +17,63 @@ export default {
     };
   },
   created() {
-    // init id increment to 0 if needed
-    if (localStorage.getItem("todo-id-incrementer") === null) {
-      localStorage.setItem("todo-id-incrementer", "-1");
-    }
-    const storedTodos = localStorage.getItem("todos");
-    this.list = storedTodos ? JSON.parse(storedTodos) : [];
-
+    // Make sure our count gets synced to state machine "todos" amount when it changes
     this.unsubscribe = this.$store.subscribe((mutation, state) => {
       this.count = state.todos;
     });
 
-    this.$store.commit("editAmount", this.list.length);
+    this.fetchTodos();
   },
   beforeUnmount() {
+    // Teardown the state change subscription
     this.unsubscribe();
   },
-  watch: {
-    list() {
-      this.updateStorage();
-    },
-  },
   methods: {
-    stringifyDate(date) {
-      return Intl.DateTimeFormat("nl-NL", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-      }).format(date);
+    // GET (Read)
+    async fetchTodos() {
+      const resp = await fetch("http://localhost:5000/todos");
+      this.list = await resp.json();
+
+      // Store amount of todos in state machine to show on other pages
+      // without having to re-fetch the todos from the API
+      this.$store.commit("editAmount", this.list.length);
     },
-    updateStorage() {
-      localStorage.setItem("todos", JSON.stringify(this.list));
-    },
-    clearStorage() {
-      this.list = [];
-      localStorage.removeItem("todo-id-incrementer");
-      localStorage.removeItem("todos");
-    },
-    addItem(ev) {
+    // POST (Create)
+    async addItem(ev) {
       ev.preventDefault();
-      localStorage.setItem(
-        "todo-id-incrementer",
-        parseFloat(localStorage.getItem("todo-id-incrementer")) + 1
-      );
-      const now = new Date();
-      this.list = [
-        {
-          id: parseFloat(localStorage.getItem("todo-id-incrementer")),
-          description: ev.target.elements.todoInput.value,
-          date: this.stringifyDate(now),
+      await fetch("http://localhost:5000/todos", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
         },
-        ...this.list,
-      ];
-      this.$store.commit("increment");
+        body: JSON.stringify({
+          value: ev.target.elements.todo.value,
+        }),
+      });
+
+      this.fetchTodos();
     },
-    updateItem(newItem) {
-      const index = this.list.findIndex((item) => item.id === newItem.id);
-      this.list[index].description = newItem.description;
-      this.list[index].date = this.stringifyDate(new Date());
-      this.updateStorage();
+    // PATCH (Update)
+    async updateItem(newItem) {
+      await fetch(`http://localhost:5000/todos/${newItem.id}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          value: newItem.value,
+        }),
+      });
+
+      this.fetchTodos();
     },
-    clearItem(id) {
-      this.list = this.list.filter((item) => item.id !== id);
-      this.$store.commit("decrement");
+    // DELETE (Delete)
+    async clearItem(id) {
+      await fetch(`http://localhost:5000/todos/${id}`, {
+        method: "DELETE",
+      });
+
+      this.fetchTodos();
     },
   },
 };
@@ -90,7 +81,6 @@ export default {
 
 <template>
   <h1>{{ msg }}</h1>
-  <button class="clear-btn" @click="clearStorage">Clear Storage</button>
   <span> Count: {{ count }}</span>
   <ul class="todo__list">
     <p v-if="list.length > 5">
