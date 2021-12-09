@@ -13,6 +13,7 @@ export default {
   data() {
     return {
       count: 0,
+      /** @type {import('../types/Todo').Todo[]} */
       list: [],
     };
   },

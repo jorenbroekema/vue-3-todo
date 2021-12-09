@@ -4,6 +4,14 @@ export default {
     item: Object,
     date: Date,
   },
+  computed: {
+    computedItem() {
+      return {
+        ...this.item,
+        id: this.item.id++
+      }
+    }
+  },
   methods: {
     edit(ev) {
       this.$emit("update", {
@@ -21,7 +29,7 @@ export default {
     <p contenteditable @blur="edit" class="todo__text">
       {{ item.value }}
     </p>
-    <input @change="$emit('clear', this.item.id)" type="checkbox" />
+    <input @change="$emit('clear', this.computedItem.id)" type="checkbox" />
   </div>
 </template>
 
@@ -33,7 +41,7 @@ export default {
   max-width: 400px;
   padding: 1rem 2rem;
   margin: 1rem auto;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   background-color: lightgreen;
 }
 
